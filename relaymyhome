@@ -81,7 +81,7 @@ function usage {
 function generateFullMacAddressList {
     # Create an array for the last octet of the mac address, limited range.
     fullList=($(for X in {0..159} ; do echo ${X} | awk '{printf "%s%02X ", "4E:53:50:4F:4F:", $1}'; done ;))
-    echo $fullList
+    echo "${fullList[@]}"
 }
 
 
@@ -147,24 +147,24 @@ case "$1" in
     # Check the repo at github for more information.
     "full" | "quick" )
         
-        addresses=$(generateFullMacAddressList)
+        addresses=(`generateFullMacAddressList`)
         num=0
 
         case "$1" in
             "full" )
                 num=5
-                echo "Full Mode enabled. Randomly seeding five addresses from full list."
+                echo "Full Mode enabled. Randomly seeding five addresses from full list of ${#addresses[@]}."
                 ;;
             "quick" )
                 num=2
-                echo "Quick Mode enabled. Randomly seeding ${num} addresses from full list."
+                echo "Quick Mode enabled. Randomly seeding ${num} addresses from full list of ${#addresses[@]}."
         esac
 
         for ((a=1; a<=num; a++));
         do
             selectedAddr=${addresses[$RANDOM % ${#addresses[@]} ]}
             echo "Spoofing ${wifi} to ${selectedAddr} for ${relay_time} seconds ($a of $num)"
-            spooofMacAddress selectedAddr
+            spooofMacAddress $selectedAddr
         done  
         cleanup
         ;;
@@ -226,7 +226,7 @@ case "$1" in
         for currentAddress in "${currentAddresses[@]}"
         do
             echo "Spoofing ${wifi} to $currentAddress for ${relay_time} seconds ($n of 21)"
-            spooofMacAddress currentAddress
+            spooofMacAddress $currentAddress
             n=$((n+1))
   
         done
